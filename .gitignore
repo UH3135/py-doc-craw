@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environments
+venv/
+.venv/
+ENV/
+
+# uv
+.python-version
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Build & Distribution
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Environment variables
+.env
+.env.local
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.mypy_cache/
+
+# Scrapy
+.scrapy/
+
+# Project specific
+data/*.db
+data/*.sqlite
+*.jsonl
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,12 @@
+[project]
+name = "pydoc-crawler"
+version = "0.1.0"
+description = "Python 문서 크롤러 - LLM/RAG용 Clean Markdown 데이터셋 구축"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "beautifulsoup4>=4.14.3",
+    "markdownify>=1.2.2",
+    "pydantic>=2.12.5",
+    "scrapy>=2.14.0",
+]
