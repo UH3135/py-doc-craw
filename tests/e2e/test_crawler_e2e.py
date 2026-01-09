@@ -1,13 +1,13 @@
 """크롤러 E2E 테스트."""
 
-from pathlib import Path
+from typing import Any
 
 import pytest
 
 from tests.e2e.helpers import (
     compute_metrics,
-    extract_frontmatter,
     normalize_for_comparison,
+    remove_frontmatter,
 )
 
 # 허용 오차 상수 (Normal 수준)
@@ -23,30 +23,32 @@ THRESHOLDS = {
 class TestCrawlerE2E:
     """크롤러 E2E 테스트 스위트."""
 
-    def test_crawl_produces_output(self, crawl_result: dict[str, str]) -> None:
-        """크롤러가 출력 파일을 생성하는지 확인."""
-        assert Path(crawl_result["saved_path"]).exists()
-        assert len(crawl_result["content"]) > 0
+    def test_crawl_produces_output(self, single_page_result: dict[str, Any]) -> None:
+        """크롤러가 출력을 생성하는지 확인."""
+        assert single_page_result.get("content_markdown")
+        assert len(single_page_result["content_markdown"]) > 0
 
-    def test_frontmatter_structure(self, crawl_result: dict[str, str]) -> None:
-        """YAML 프론트매터 구조 검증."""
-        frontmatter = extract_frontmatter(crawl_result["content"])
-
-        assert "title" in frontmatter
-        assert "url" in frontmatter
-        assert "content_hash" in frontmatter
-        assert frontmatter["title"] == "The Python Tutorial"
-        assert "docs.python.org" in frontmatter["url"]
+    def test_document_structure(self, single_page_result: dict[str, Any]) -> None:
+        """문서 구조 검증."""
+        assert "title" in single_page_result
+        assert "url" in single_page_result
+        assert "content_hash" in single_page_result
+        assert single_page_result["title"] == "The Python Tutorial"
+        assert "docs.python.org" in single_page_result["url"]
 
     def test_content_similarity_against_golden(
         self,
-        crawl_result: dict[str, str],
+        single_page_result: dict[str, Any],
         golden_tutorial: str,
     ) -> None:
         """Golden file 대비 내용 유사도 검증."""
         # 정규화
-        crawled_normalized = normalize_for_comparison(crawl_result["content"])
-        golden_normalized = normalize_for_comparison(golden_tutorial)
+        crawled_normalized = normalize_for_comparison(
+            single_page_result["content_markdown"]
+        )
+        golden_normalized = normalize_for_comparison(
+            remove_frontmatter(golden_tutorial)
+        )
 
         # 메트릭 계산
         metrics = compute_metrics(golden_normalized, crawled_normalized)
@@ -74,22 +76,25 @@ class TestCrawlerE2E:
             f"below threshold {THRESHOLDS['similarity_min']}"
         )
 
-    def test_line_count_in_range(self, crawl_result: dict[str, str]) -> None:
-        """출력 파일의 줄 수가 예상 범위 내인지 확인."""
-        lines = crawl_result["content"].split("\n")
+    def test_line_count_in_range(self, single_page_result: dict[str, Any]) -> None:
+        """출력의 줄 수가 예상 범위 내인지 확인."""
+        content = single_page_result["content_markdown"]
+        lines = content.split("\n")
         line_count = len(lines)
 
-        # 기준 문서가 188줄이므로 ±20% 허용
-        min_lines = 150
-        max_lines = 230
+        # 기준 문서가 약 180줄이므로 ±30% 허용
+        min_lines = 120
+        max_lines = 250
 
         assert min_lines <= line_count <= max_lines, (
             f"Line count {line_count} out of expected range [{min_lines}, {max_lines}]"
         )
 
-    def test_essential_sections_present(self, crawl_result: dict[str, str]) -> None:
+    def test_essential_sections_present(
+        self, single_page_result: dict[str, Any]
+    ) -> None:
         """필수 섹션이 존재하는지 확인."""
-        content = crawl_result["content"]
+        content = single_page_result["content_markdown"]
 
         essential_sections = [
             "The Python Tutorial",

@@ -12,6 +12,9 @@ dependencies = [
     "scrapy>=2.14.0",
 ]
 
+[project.scripts]
+pydoc-crawler = "pydoc_crawler.cli:main"
+
 [dependency-groups]
 dev = [
     "mypy>=1.19.1",

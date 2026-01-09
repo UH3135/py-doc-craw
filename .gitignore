@@ -37,6 +37,7 @@ htmlcov/
 
 # Scrapy
 .scrapy/
+.scrapy_cache/
 
 # Project specific
 data/*.db
