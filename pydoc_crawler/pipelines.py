@@ -16,14 +16,24 @@ logger = logging.getLogger(__name__)
 class ValidationPipeline:
     """Pydantic 모델을 통한 데이터 유효성 검증."""
 
+    def __init__(self) -> None:
+        self.seen_urls: set[str] = set()
+
     def process_item(self, item: DocumentItem, spider: Spider) -> dict[str, Any]:
         """아이템 유효성 검증 및 dict 변환."""
+        from scrapy.exceptions import DropItem
+
         try:
             # Pydantic 모델 검증
             if isinstance(item, DocumentItem):
                 validated = item
             else:
                 validated = DocumentItem(**dict(item))
+
+            # 중복 URL 필터링
+            if validated.url in self.seen_urls:
+                raise DropItem(f"중복 URL: {validated.url}")
+            self.seen_urls.add(validated.url)
 
             # JSON 직렬화 가능한 dict로 변환
             result: dict[str, Any] = validated.model_dump(mode="json")

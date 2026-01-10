@@ -74,6 +74,10 @@ class PythonDocsSpider(CrawlSpider):  # type: ignore[misc]
 
         super().__init__(*args, **kwargs)
 
+    def parse_start_url(self, response: Response) -> Iterator[DocumentItem]:
+        """시작 URL (index.html) 파싱."""
+        return self.parse_document(response)
+
     def parse_document(self, response: Response) -> Iterator[DocumentItem]:
         """문서 페이지 파싱."""
         try:
